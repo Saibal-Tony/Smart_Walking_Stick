@@ -22,16 +22,18 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      await Supabase.instance.client.auth.signInWithPassword(
+      final response = await Supabase.instance.client.auth.signInWithPassword(
         email: _emailCtrl.text.trim(),
         password: _passCtrl.text.trim(),
       );
 
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
+      if (response.user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
     } on AuthException catch (e) {
       setState(() => _errorText = e.message);
     } catch (e) {
@@ -41,39 +43,31 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _signUp() async {
-    setState(() {
-      _loading = true;
-      _errorText = null;
-    });
+  Future<void> _forgotPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) {
+      setState(() => _errorText = 'Enter your email to reset password.');
+      return;
+    }
 
     try {
-      await Supabase.instance.client.auth.signUp(
-        email: _emailCtrl.text.trim(),
-        password: _passCtrl.text.trim(),
-      );
-
-      if (!mounted) return;
+      await Supabase.instance.client.auth.resetPasswordForEmail(email);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign up successful, now log in.')),
+        const SnackBar(content: Text('Password reset link sent to email.')),
       );
-    } on AuthException catch (e) {
-      setState(() => _errorText = e.message);
     } catch (e) {
-      setState(() => _errorText = 'Unexpected error: $e');
-    } finally {
-      setState(() => _loading = false);
+      setState(() => _errorText = 'Failed to send reset email.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Parent Login')),
+      appBar: AppBar(title: const Text('Login')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: ListView(
+          shrinkWrap: true,
           children: [
             TextField(
               controller: _emailCtrl,
@@ -92,28 +86,27 @@ class _LoginPageState extends State<LoginPage> {
               ),
               obscureText: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _forgotPassword,
+                child: const Text('Forgot Password?'),
+              ),
+            ),
+            const SizedBox(height: 12),
             if (_errorText != null)
               Text(_errorText!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _loading ? null : _login,
-                  child: _loading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Login'),
-                ),
-                TextButton(
-                  onPressed: _loading ? null : _signUp,
-                  child: const Text('Sign Up'),
-                ),
-              ],
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _loading ? null : _login,
+              child: _loading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Login'),
             ),
           ],
         ),
