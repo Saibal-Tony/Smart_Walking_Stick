@@ -11,7 +11,8 @@ void main() async {
 
   await Supabase.initialize(
     url: 'https://jgdbcbqmmewvrfyiekwx.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...YOUR_KEY...',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZGJjYnFtbWV3dnJmeWlla3d4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1OTgxODQsImV4cCI6MjA4MDE3NDE4NH0.BITzvmKe9vPOoiPx7Xb0JEoRLsmMXrKd9L-B3jQkcvY',
   );
 
   runApp(const MyApp());
@@ -34,15 +35,14 @@ class _MyAppState extends State<MyApp> {
     handleIncomingLinks();
   }
 
-  void handleIncomingLinks() {
-    _appLinks = AppLinks();
-    _appLinks.uriLinkStream.listen((Uri? uri) {
+  void handleIncomingLinks() async {
+    final AppLinks appLinks = AppLinks();
+    appLinks.uriLinkStream.listen((Uri? uri) {
       if (uri != null && uri.toString().contains('type=recovery')) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
-          );
-        });
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+        );
       }
     });
   }
