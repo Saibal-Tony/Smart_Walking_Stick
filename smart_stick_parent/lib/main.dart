@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 
 import 'login_page.dart';
 import 'home_page.dart';
-import 'reset_password_screen.dart'; // Make sure this screen exists
+import 'reset_password_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
     url: 'https://jgdbcbqmmewvrfyiekwx.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZGJjYnFtbWV3dnJmeWlla3d4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1OTgxODQsImV4cCI6MjA4MDE3NDE4NH0.BITzvmKe9vPOoiPx7Xb0JEoRLsmMXrKd9L-B3jQkcvY', // replace with your actual key
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...YOUR_KEY...',
   );
 
   runApp(const MyApp());
@@ -26,6 +26,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
+  late final AppLinks _appLinks;
 
   @override
   void initState() {
@@ -34,8 +35,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   void handleIncomingLinks() {
-    uriLinkStream.listen((Uri? uri) {
-      if (uri != null && uri.toString().contains('reset')) {
+    _appLinks = AppLinks();
+    _appLinks.uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.toString().contains('type=recovery')) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
